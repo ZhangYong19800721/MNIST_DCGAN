@@ -40,7 +40,7 @@ if __name__ == '__main__':
         torch.manual_seed(args.seed)
 
     ## set the data set
-    dataset = DATASET_MNIST.TRAINSET("./mnist/mnist.mat")
+    dataset = DATASET_MNIST.TRAINSET("./data/mnist.mat")
     dataLoader = DATASET_MNIST.DATASET_LOADER(dataset, minibatch_size=args.minibatch_size)
     minibatch_count = len(dataLoader)
 
@@ -134,7 +134,7 @@ if __name__ == '__main__':
             istep = minibatch_count * (epoch - args.B_EPOCHS) + minibatch_id
             writer.add_scalar("AVE_DIFF", V_AVE_DIFF, istep)
 
-            if istep % 500 == 0:
+            if istep % 300 == 0:
                 # save model every 1000 iteration
                 model_G_file = open(args.outputDir + "/model_G_CPU_%05d.pkl" % epoch, "wb")
                 model_D_file = open(args.outputDir + "/model_D_CPU_%05d.pkl" % epoch, "wb")
