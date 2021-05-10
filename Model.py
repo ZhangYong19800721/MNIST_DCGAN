@@ -184,6 +184,69 @@ class Discriminator_SP(nn.Module):
         y = self.Full_Sequential(y)
         return y
 
+class Discriminator_GP(nn.Module):
+    def __init__(self, inChannel=1):
+        super(Discriminator_GP, self).__init__()
+
+        self.FeatureExtractor = nn.Sequential(
+            nn.Conv2d(in_channels=inChannel, out_channels=32, kernel_size=3, stride=1, padding=1, bias=True),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1, bias=True),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1, bias=True),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1, bias=True),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(in_channels=64, out_channels=32, kernel_size=3, stride=2, padding=1, bias=True),
+            nn.LeakyReLU(0.2),
+            nn.Flatten(),
+        )
+
+        self.Full_Sequential = nn.Sequential(
+            nn.Linear(2048, 1024),
+            nn.LeakyReLU(0.2),
+            nn.Linear(1024, 512),
+            nn.LeakyReLU(0.2),
+            nn.Linear(512, 1),
+        )
+
+    def forward(self, imageHR):
+        y = self.FeatureExtractor(imageHR)
+        y = self.Full_Sequential(y)
+        return y
+
+class Discriminator(nn.Module):
+    def __init__(self, inChannel=1):
+        super(Discriminator, self).__init__()
+
+        self.FeatureExtractor = nn.Sequential(
+            nn.Conv2d(in_channels=inChannel, out_channels=32, kernel_size=3, stride=1, padding=1, bias=True),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1, bias=True),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1, bias=True),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1, bias=True),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(in_channels=64, out_channels=32, kernel_size=3, stride=2, padding=1, bias=True),
+            nn.LeakyReLU(0.2),
+            nn.Flatten(),
+        )
+
+        self.Full_Sequential = nn.Sequential(
+            nn.Linear(2048, 1024),
+            nn.LeakyReLU(0.2),
+            nn.Linear(1024, 512),
+            nn.LeakyReLU(0.2),
+            nn.Linear(512, 1),
+            nn.Sigmoid(),
+        )
+
+    def forward(self, x):
+        y = self.FeatureExtractor(x)
+        y = self.Full_Sequential(y)
+        return y
+
 
 if __name__ == '__main__':
     G = Generator()
