@@ -24,14 +24,15 @@ if __name__ == '__main__':
     parser.add_argument("--NGPU", type=int, help="specify the number of GPUs to use")
     parser.add_argument("--B_EPOCHS", type=int, help="The start epoch id")
     parser.add_argument("--N_EPOCHS", type=int, help="The end epoch id")
+    parser.add_argument("--outputDir", type=str, help="the output directory")
     parser.add_argument("--isLoadG", type=str, help="None or the path for pretrained G model")
     parser.add_argument("--isLoadD", type=str, help="None or the path for pretrained D model")
-    parser.add_argument("--logdir", type=str, help="The log dir")
+    parser.add_argument("--logDir", type=str, help="The log directory")
     args = parser.parse_args()
 
     nz = 64
 
-    writer = SummaryWriter(args.logdir + "/Train_Log_" + time.strftime("%Y%m%d[%H:%M:%S]", time.localtime()))
+    writer = SummaryWriter(args.logDir + "/Train_Log_" + time.strftime("%Y%m%d[%H:%M:%S]", time.localtime()))
 
     ## set the hyper parameters
     if args.seed != None:
@@ -135,8 +136,8 @@ if __name__ == '__main__':
 
             if istep % 500 == 0:
                 # save model every 1000 iteration
-                model_G_file = open(r"./model/model_G_CPU_%05d.pkl" % epoch, "wb")
-                model_D_file = open(r"./model/model_D_CPU_%05d.pkl" % epoch, "wb")
+                model_G_file = open(args.outputDir + "/model_G_CPU_%05d.pkl" % epoch, "wb")
+                model_D_file = open(args.outputDir + "/model_D_CPU_%05d.pkl" % epoch, "wb")
                 pickle.dump(G.to("cpu"), model_G_file)
                 pickle.dump(D.to("cpu"), model_D_file)
                 G.to(device)
