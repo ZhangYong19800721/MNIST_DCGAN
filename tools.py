@@ -292,7 +292,7 @@ def compute_gradient_penalty(D, device, real_samples, fake_samples):
                               create_graph=True, retain_graph=True, only_inputs=True)[0]
 
     # 利用梯度计算出gradient penalty
-    gradient_penalty = torch.relu(gradients.norm(2, dim=(1, 2, 3)) - 0.95).mean()
+    gradient_penalty = torch.relu(gradients.norm(2, dim=(1, 2, 3)) - 1).mean()
     return gradient_penalty
 
 
