@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
             ## Update D network: for WGAN maximize D(x) - D(G(z))
             D.zero_grad()  # set discriminator gradient to zero
-            fake_images = G(noise)
+            fake_images = G(noise).detach()
             output_real_D = D(real_images)
             output_fake_D = D(fake_images)
             diff = (output_real_D - output_fake_D).mean()
