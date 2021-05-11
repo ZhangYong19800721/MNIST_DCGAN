@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument("--logDir", type=str, help="The log directory")
     args = parser.parse_args()
 
-    nz = 64
+    nz = 100
 
     open_time_str = time.strftime("%Y%m%d[%H:%M:%S]", time.localtime())
     os.mkdir(args.outputDir + "/" + open_time_str)
@@ -96,8 +96,8 @@ if __name__ == '__main__':
         D = nn.DataParallel(D, list(range(args.NGPU)))
 
     BCE = torch.nn.BCELoss()
-    real_label = torch.full((args.minibatch_size,1), 1.0, dtype=torch.float32, device=device)
-    fake_label = torch.full((args.minibatch_size,1), 0.0, dtype=torch.float32, device=device)
+    real_label = torch.full((args.minibatch_size,1,1,1), 1.0, dtype=torch.float32, device=device)
+    fake_label = torch.full((args.minibatch_size,1,1,1), 0.0, dtype=torch.float32, device=device)
 
     print("Start to train .... ")
     alpha = 0.01

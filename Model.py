@@ -131,20 +131,19 @@ class PatchFeatureExtractor4(nn.Module):
 
 
 class Generator(nn.Module):
-    def __init__(self, nz=64):
+    def __init__(self, nz=100):
         super(Generator, self).__init__()
-        self.L01_Sequential = nn.Sequential(nn.ConvTranspose2d(nz, 256, kernel_size=4, stride=1, padding=0),
+        self.L01_Sequential = nn.Sequential(nn.ConvTranspose2d(nz, 512, kernel_size=4, stride=1, padding=0),
+                                            nn.BatchNorm2d(512),
+                                            nn.PReLU(512),
+                                            nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2, padding=1),
                                             nn.BatchNorm2d(256),
                                             nn.PReLU(256),
                                             nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1),
                                             nn.BatchNorm2d(128),
                                             nn.PReLU(128),
-                                            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),
-                                            nn.BatchNorm2d(64),
-                                            nn.PReLU(64),
-                                            nn.ConvTranspose2d(64, 1, kernel_size=4, stride=2, padding=1),
-                                            nn.BatchNorm2d(1),
-                                            nn.LeakyReLU(0.2),
+                                            nn.ConvTranspose2d(128, 1, kernel_size=4, stride=2, padding=1),
+                                            nn.Tanh(),
                                             )
 
     # the x is low resolution images minibatch
@@ -184,6 +183,7 @@ class Discriminator_SP(nn.Module):
         y = self.Full_Sequential(y)
         return y
 
+
 class Discriminator_GP(nn.Module):
     def __init__(self, inChannel=1):
         super(Discriminator_GP, self).__init__()
@@ -215,43 +215,36 @@ class Discriminator_GP(nn.Module):
         y = self.Full_Sequential(y)
         return y
 
+
 class Discriminator(nn.Module):
     def __init__(self, inChannel=1):
         super(Discriminator, self).__init__()
 
-        self.FeatureExtractor = nn.Sequential(
-            nn.Conv2d(in_channels=inChannel, out_channels=32, kernel_size=3, stride=1, padding=1, bias=True),
+        self.L01_Seq = nn.Sequential(
+            nn.Conv2d(in_channels=inChannel, out_channels=64, kernel_size=4, stride=2, padding=1, bias=True),
+            nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2),
-            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1, bias=True),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=4, stride=2, padding=1, bias=True),
+            nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2),
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1, bias=True),
+            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=4, stride=2, padding=1, bias=True),
+            nn.BatchNorm2d(256),
             nn.LeakyReLU(0.2),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1, bias=True),
-            nn.LeakyReLU(0.2),
-            nn.Conv2d(in_channels=64, out_channels=32, kernel_size=3, stride=2, padding=1, bias=True),
-            nn.LeakyReLU(0.2),
-            nn.Flatten(),
-        )
-
-        self.Full_Sequential = nn.Sequential(
-            nn.Linear(2048, 1024),
-            nn.LeakyReLU(0.2),
-            nn.Linear(1024, 512),
-            nn.LeakyReLU(0.2),
-            nn.Linear(512, 1),
-            nn.Sigmoid(),
+            nn.Conv2d(in_channels=256, out_channels=1, kernel_size=4, stride=1, padding=0, bias=True),
+            nn.Sigmoid()
         )
 
     def forward(self, x):
-        y = self.FeatureExtractor(x)
-        y = self.Full_Sequential(y)
+        y = self.L01_Seq(x)
         return y
 
 
 if __name__ == '__main__':
     G = Generator()
-    D = Discriminator_SP()
-    noise = torch.randn((2, 64, 1, 1))
+    D = Discriminator()
+    noise = torch.randn((2, 100, 1, 1))
     with torch.no_grad():
         z = G(noise)
+        p = D(z)
     print(z.shape)
+    print(p.shape)

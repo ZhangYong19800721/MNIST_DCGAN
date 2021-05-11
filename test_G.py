@@ -25,7 +25,7 @@ if __name__ == "__main__":
     modelG_file.close()  # close the model file
 
     ## set the data set
-    noise = torch.randn((9, 64, 1, 1))
+    noise = torch.randn((9, 100, 1, 1))
     images = modelG(noise)
 
     tools.showNineGrid_3x3(images[0], images[1], images[2],
