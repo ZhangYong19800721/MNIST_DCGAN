@@ -4,6 +4,7 @@
 # train_DCWGAN.py
 # train the model, include parameters initializing
 ########################################################################################################################
+import os
 import argparse
 import random
 import time
@@ -30,9 +31,11 @@ if __name__ == '__main__':
     parser.add_argument("--logDir", type=str, help="The log directory")
     args = parser.parse_args()
 
-    nz = 64
+    nz = 100
 
-    writer = SummaryWriter(args.logDir + "/Train_Log_" + time.strftime("%Y%m%d[%H:%M:%S]", time.localtime()))
+    open_time_str = time.strftime("%Y%m%d[%H:%M:%S]", time.localtime())
+    os.mkdir(args.outputDir + "/" + open_time_str)
+    writer = SummaryWriter(args.logDir + "/" + open_time_str)
 
     ## set the hyper parameters
     if args.seed != None:
@@ -81,9 +84,6 @@ if __name__ == '__main__':
         D = Model.Discriminator_SP(inChannel=1)  # create a discriminator
         D.apply(tools.weights_init)  # initialize weights for discriminator
 
-    # Initialize BCE and MSE function
-    MSE = nn.MSELoss(reduction='mean')
-
     # Setup Adam optimizers for both G and D
     optimizerD = optim.Adam(D.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
     optimizerG = optim.Adam(G.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
@@ -105,30 +105,30 @@ if __name__ == '__main__':
             ## Update D network:
             # train with all-real batch
             minibatch = dataLoader[minibatch_id]
-            images = minibatch['image']
-            images = images.to(device)
+            real_images = minibatch['image']
+            real_images = real_images.to(device)
             noise = torch.randn((args.minibatch_size, nz, 1, 1))
 
             ## Update D network: for WGAN maximize D(x) - D(G(z))
             D.zero_grad()  # set discriminator gradient to zero
-            images_fake = G(noise)
-            output_real_D = D(images)
-            output_fake_D = D(images_fake)
+            fake_images = G(noise)
+            output_real_D = D(real_images)
+            output_fake_D = D(fake_images)
             diff = (output_real_D - output_fake_D).mean()
             loss = -diff
             loss.backward()
             optimizerD.step()
 
             G.zero_grad()  # set the generator gradient to zero
-            images_fake = G(noise)
-            output_fake_G_D = D(images_fake)
-            loss_G_D = -output_fake_G_D.mean() # + 1e-3 * loss_optim_mmse
+            fake_images = G(noise)
+            output_fake_G_D = D(fake_images)
+            loss_G_D = -output_fake_G_D.mean()
             loss_G_D.backward()
-            optimizerG.step()  # Update Gu parameters
+            optimizerG.step()  # Update G parameters
 
             V_AVE_DIFF = AVE_DIFF.expma(abs(diff.item()))
 
-            message = "Epoch:%5d/%5d, MinibatchID:%5d/%5d, DIFF:% 6.12f" % (epoch, args.N_EPOCHS-1, minibatch_id, minibatch_count, V_AVE_DIFF)
+            message = "Epoch:%5d/%5d, MinibatchID:%5d/%5d, DIFF:% 6.12f" % (epoch, args.N_EPOCHS, minibatch_id, minibatch_count, V_AVE_DIFF)
             print(message)
 
             istep = minibatch_count * (epoch - args.B_EPOCHS) + minibatch_id
@@ -136,8 +136,8 @@ if __name__ == '__main__':
 
             if istep % 300 == 0:
                 # save model every 1000 iteration
-                model_G_file = open(args.outputDir + "/model_G_CPU_%05d.pkl" % epoch, "wb")
-                model_D_file = open(args.outputDir + "/model_D_CPU_%05d.pkl" % epoch, "wb")
+                model_G_file = open(args.outputDir + "/" + open_time_str + "/model_G_CPU.pkl", "wb")
+                model_D_file = open(args.outputDir + "/" + open_time_str + "/model_D_CPU.pkl", "wb")
                 pickle.dump(G.to("cpu"), model_G_file)
                 pickle.dump(D.to("cpu"), model_D_file)
                 G.to(device)

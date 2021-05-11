@@ -52,7 +52,7 @@ class DATASET_LOADER(object):
         minibatch_images = minibatch_images.transpose().reshape(28, 28, self.minibatch_size).transpose((2, 0, 1)) / 255.0
         minibatch_images = torch.FloatTensor(minibatch_images)
         minibatch_images = torch.stack((minibatch_images,), dim=1)
-        minibatch_images = torch.nn.functional.pad(minibatch_images, (2, 2, 2, 2), mode='constant', value=0.1)
+        minibatch_images = torch.nn.functional.pad(minibatch_images, (2, 2, 2, 2), mode='constant', value=0.45)
         minibatch_labels = torch.LongTensor(minibatch_labels)
         return {"image": minibatch_images, "label": minibatch_labels}
 

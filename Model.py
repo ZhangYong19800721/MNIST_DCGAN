@@ -241,7 +241,7 @@ class Discriminator(nn.Module):
 
 if __name__ == '__main__':
     G = Generator()
-    D = Discriminator()
+    D = Discriminator_SP()
     noise = torch.randn((2, 100, 1, 1))
     with torch.no_grad():
         z = G(noise)
