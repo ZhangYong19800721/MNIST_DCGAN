@@ -85,8 +85,14 @@ if __name__ == '__main__':
         D.apply(tools.weights_init)  # initialize weights for discriminator
 
     # Setup Adam optimizers for both G and D
-    optimizerD = optim.Adam(D.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
-    optimizerG = optim.Adam(G.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
+    optimizerD = optim.SGD(D.parameters(), lr=args.learn_rate)
+    optimizerG = optim.SGD(G.parameters(), lr=args.learn_rate)
+
+    # optimizerD = optim.Adam(D.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
+    # optimizerG = optim.Adam(G.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
+
+    # optimizerD = optim.RMSprop(D.parameters(), lr=args.learn_rate)
+    # optimizerG = optim.RMSprop(G.parameters(), lr=args.learn_rate)
 
     ## push models to GPUs
     G = G.to(device)

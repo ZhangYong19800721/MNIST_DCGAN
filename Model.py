@@ -143,7 +143,7 @@ class Generator(nn.Module):
                                             nn.BatchNorm2d(128),
                                             nn.PReLU(128),
                                             nn.ConvTranspose2d(128, 1, kernel_size=4, stride=2, padding=1),
-                                            nn.Tanh(),
+                                            nn.LeakyReLU(0.2),
                                             )
 
     # the x is low resolution images minibatch
