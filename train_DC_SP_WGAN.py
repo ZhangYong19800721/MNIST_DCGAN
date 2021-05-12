@@ -85,8 +85,8 @@ if __name__ == '__main__':
         D.apply(tools.weights_init)  # initialize weights for discriminator
 
     # Setup optimizers for both G and D
-    optimizerD = optim.SGD(D.parameters(), lr=args.learn_rate)
-    optimizerG = optim.SGD(G.parameters(), lr=args.learn_rate)
+    optimizerD = optim.SGD(D.parameters(), lr=args.learn_rate, momentum=0.9)
+    optimizerG = optim.SGD(G.parameters(), lr=args.learn_rate, momentum=0.9)
 
     #optimizerD = optim.Adam(D.parameters(), lr=args.learn_rate, betas=(0.5, 0.999))
     #optimizerG = optim.Adam(G.parameters(), lr=args.learn_rate, betas=(0.5, 0.999))

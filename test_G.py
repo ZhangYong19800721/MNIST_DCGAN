@@ -24,14 +24,6 @@ if __name__ == "__main__":
     modelG.eval()  # set the model to evaluation mode, (the dropout layer need this)
     modelG_file.close()  # close the model file
 
-    with torch.no_grad():
-        noise = torch.randn((9, 100, 1, 1))
-        images = modelG(noise)
-
-    tools.showNineGrid_3x3(images[0], images[1], images[2],
-                           images[3], images[4], images[5],
-                           images[6], images[7], images[8])
-
     ## set the data set
     dataset = DATASET_MNIST.TRAINSET("./data/mnist.mat")
     dataLoader = DATASET_MNIST.DATASET_LOADER(dataset, minibatch_size=100)
@@ -44,3 +36,12 @@ if __name__ == "__main__":
     tools.showNineGrid_3x3(minibatch['image'][0], minibatch['image'][1], minibatch['image'][2],
                            minibatch['image'][3], minibatch['image'][4], minibatch['image'][5],
                            minibatch['image'][6], minibatch['image'][7], minibatch['image'][8])
+
+    with torch.no_grad():
+        noise = torch.randn((9, 100, 1, 1))
+        images = modelG(noise)
+
+    tools.showNineGrid_3x3(images[0], images[1], images[2],
+                           images[3], images[4], images[5],
+                           images[6], images[7], images[8])
+
