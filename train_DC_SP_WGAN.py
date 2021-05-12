@@ -17,10 +17,22 @@ import DATASET_MNIST
 import tools
 from torch.utils.tensorboard import SummaryWriter
 
+"""
+--learn_rate=0.001
+--optimizer=ADAM
+--minibatch_size=200
+--NGPU=2
+--B_EPOCHS=0
+--N_EPOCHS=9000
+--outputDir=./output
+--logDir=./log
+"""
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, help="The manual random seed")
     parser.add_argument("--learn_rate", type=float, help="The learn rate")
+    parser.add_argument("--optimizer", type=str, help="The optimizer, SGD or ADAM or RMSProp")
     parser.add_argument("--minibatch_size", type=int, help="The minibatch size")
     parser.add_argument("--NGPU", type=int, help="specify the number of GPUs to use")
     parser.add_argument("--B_EPOCHS", type=int, help="The start epoch id")
@@ -31,7 +43,7 @@ if __name__ == '__main__':
     parser.add_argument("--logDir", type=str, help="The log directory")
     args = parser.parse_args()
 
-    nz = 100
+    nz = 60
 
     open_time_str = time.strftime("%Y%m%d[%H:%M:%S]", time.localtime())
     os.mkdir(args.outputDir + "/" + open_time_str)
@@ -85,14 +97,16 @@ if __name__ == '__main__':
         D.apply(tools.weights_init)  # initialize weights for discriminator
 
     # Setup optimizers for both G and D
-    optimizerD = optim.SGD(D.parameters(), lr=args.learn_rate, momentum=0.9)
-    optimizerG = optim.SGD(G.parameters(), lr=args.learn_rate, momentum=0.9)
+    if args.optimizer == 'SGD':
+        optimizerD = optim.SGD(D.parameters(), lr=args.learn_rate, momentum=0.9)
+        optimizerG = optim.SGD(G.parameters(), lr=args.learn_rate, momentum=0.9)
+    elif args.optimizer == 'ADAM':
+        optimizerD = optim.Adam(D.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
+        optimizerG = optim.Adam(G.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
+    elif args.optimizer == 'RMSProp':
+        optimizerD = optim.RMSprop(D.parameters(), lr=args.learn_rate)
+        optimizerG = optim.RMSprop(G.parameters(), lr=args.learn_rate)
 
-    #optimizerD = optim.Adam(D.parameters(), lr=args.learn_rate, betas=(0.5, 0.999))
-    #optimizerG = optim.Adam(G.parameters(), lr=args.learn_rate, betas=(0.5, 0.999))
-
-    #optimizerD = optim.RMSprop(D.parameters(), lr=args.learn_rate)
-    #optimizerG = optim.RMSprop(G.parameters(), lr=args.learn_rate)
 
     ## push models to GPUs
     G = G.to(device)

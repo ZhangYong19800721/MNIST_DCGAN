@@ -31,14 +31,15 @@ if __name__ == "__main__":
 
     # show some data samples
     print("Show some images ...., press ENTER to continue. ")
-    n = random.randint(0, len(dataLoader))
+    n = random.randint(0, len(dataLoader)-1)
     minibatch = dataLoader[n]
     tools.showNineGrid_3x3(minibatch['image'][0], minibatch['image'][1], minibatch['image'][2],
                            minibatch['image'][3], minibatch['image'][4], minibatch['image'][5],
                            minibatch['image'][6], minibatch['image'][7], minibatch['image'][8])
 
+    nz = 60
     with torch.no_grad():
-        noise = torch.randn((9, 100, 1, 1))
+        noise = torch.randn((9, nz, 1, 1))
         images = modelG(noise)
 
     tools.showNineGrid_3x3(images[0], images[1], images[2],
