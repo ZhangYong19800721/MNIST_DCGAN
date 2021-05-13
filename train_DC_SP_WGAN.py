@@ -20,7 +20,7 @@ from torch.utils.tensorboard import SummaryWriter
 """
 --learn_rate=0.001
 --optimizer=ADAM
---minibatch_size=200
+--minibatch_size=3000
 --NGPU=2
 --B_EPOCHS=0
 --N_EPOCHS=9000
@@ -74,10 +74,10 @@ if __name__ == '__main__':
         ##########################################################################
         ## load the pretrained G model
         modelG_file = open(args.isLoadG, "rb")  # open the model file
-        Gu = pickle.load(modelG_file)  # load the model file
-        if isinstance(Gu, nn.DataParallel):
-            Gu = Gu.module
-        Gu.to(device)  # push model to GPU device
+        G = pickle.load(modelG_file)  # load the model file
+        if isinstance(G, nn.DataParallel):
+            G = G.module
+        G.to(device)  # push model to GPU device
         modelG_file.close()  # close the model file
     else:
         G = Model.Generator(nz=nz)  # create a generator
