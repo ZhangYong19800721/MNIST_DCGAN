@@ -18,12 +18,12 @@ import tools
 from torch.utils.tensorboard import SummaryWriter
 
 """
---learn_rate=0.001
+--learn_rate=0.0005
 --optimizer=ADAM
---minibatch_size=200
+--minibatch_size=3000
 --NGPU=2
 --B_EPOCHS=0
---N_EPOCHS=9000
+--N_EPOCHS=9999
 --outputDir=./output
 --logDir=./log
 """
@@ -136,14 +136,14 @@ if __name__ == '__main__':
             output_fake_D = D(fake_images)
             diff = (output_real_D - output_fake_D).mean()
             gradient_penalty = tools.cal_gradient_penalty(D, device, real_images, fake_images)
-            loss = gradient_penalty - diff
+            loss = gradient_penalty - 0.1 * diff
             loss.backward()
             optimizerD.step()
 
             G.zero_grad()  # set the generator gradient to zero
             fake_images = G(noise)
             output_fake_G_D = D(fake_images)
-            loss_G_D = -output_fake_G_D.mean()
+            loss_G_D = -0.1 * output_fake_G_D.mean()
             loss_G_D.backward()
             optimizerG.step()  # Update G parameters
 
