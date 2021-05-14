@@ -18,9 +18,9 @@ import tools
 from torch.utils.tensorboard import SummaryWriter
 
 """
---learn_rate=0.001
+--learn_rate=0.0005
 --optimizer=ADAM
---minibatch_size=200
+--minibatch_size=3000
 --NGPU=2
 --B_EPOCHS=0
 --N_EPOCHS=9000
@@ -38,9 +38,9 @@ if __name__ == '__main__':
     parser.add_argument("--B_EPOCHS", type=int, help="The start epoch id")
     parser.add_argument("--N_EPOCHS", type=int, help="The end epoch id")
     parser.add_argument("--outputDir", type=str, help="the output directory")
+    parser.add_argument("--logDir", type=str, help="The log directory")
     parser.add_argument("--isLoadG", type=str, help="None or the path for pretrained G model")
     parser.add_argument("--isLoadD", type=str, help="None or the path for pretrained D model")
-    parser.add_argument("--logDir", type=str, help="The log directory")
     args = parser.parse_args()
 
     nz = 60
