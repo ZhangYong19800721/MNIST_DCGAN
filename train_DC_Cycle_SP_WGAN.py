@@ -39,11 +39,10 @@ if __name__ == '__main__':
     parser.add_argument("--N_EPOCHS", type=int, help="The end epoch id")
     parser.add_argument("--outputDir", type=str, help="the output directory")
     parser.add_argument("--logDir", type=str, help="The log directory")
-    parser.add_argument("--isLoadG", type=str, help="None or the path for pretrained G model")
+    parser.add_argument("--isLoadGu", type=str, help="None or the path for pretrained Gu model")
+    parser.add_argument("--isLoadGd", type=str, help="None or the path for pretrained Gd model")
     parser.add_argument("--isLoadD", type=str, help="None or the path for pretrained D model")
     args = parser.parse_args()
-
-    nz = 60
 
     open_time_str = time.strftime("%Y%m%d[%H:%M:%S]", time.localtime())
     os.mkdir(args.outputDir + "/" + open_time_str)
@@ -70,18 +69,31 @@ if __name__ == '__main__':
                            minibatch['image'][3], minibatch['image'][4], minibatch['image'][5],
                            minibatch['image'][6], minibatch['image'][7], minibatch['image'][8])
 
-    if args.isLoadG:
+    if args.isLoadGu:
         ##########################################################################
         ## load the pretrained G model
-        modelG_file = open(args.isLoadG, "rb")  # open the model file
-        Gu = pickle.load(modelG_file)  # load the model file
+        modelGu_file = open(args.isLoadG, "rb")  # open the model file
+        Gu = pickle.load(modelGu_file)  # load the model file
         if isinstance(Gu, nn.DataParallel):
             Gu = Gu.module
         Gu.to(device)  # push model to GPU device
-        modelG_file.close()  # close the model file
+        modelGu_file.close()  # close the model file
     else:
-        G = Model.Generator(nz=nz)  # create a generator
-        G.apply(tools.weights_init)  # initialize weights for generator
+        Gu = Model.GeneratorUx1(1, 32, 1)  # create a generator
+        Gu.apply(tools.weights_init)  # initialize weights for generator
+
+    if args.isLoadGd:
+        ##########################################################################
+        ## load the pretrained G model
+        modelGd_file = open(args.isLoadGd, "rb")  # open the model file
+        Gd = pickle.load(modelGd_file)  # load the model file
+        if isinstance(Gd, nn.DataParallel):
+            Gd = Gd.module
+        Gd.to(device)  # push model to GPU device
+        modelGd_file.close()  # close the model file
+    else:
+        Gd = Model.GeneratorDx1(1, 32, 1)  # create a generator
+        Gd.apply(tools.weights_init)  # initialize weights for generator
 
     if args.isLoadD:
         ##########################################################################
@@ -99,25 +111,33 @@ if __name__ == '__main__':
     # Setup optimizers for both G and D
     if args.optimizer == 'SGD':
         optimizerD = optim.SGD(D.parameters(), lr=args.learn_rate, momentum=0.9)
-        optimizerG = optim.SGD(G.parameters(), lr=args.learn_rate, momentum=0.9)
+        optimizerGu = optim.SGD(Gu.parameters(), lr=args.learn_rate, momentum=0.9)
+        optimizerGd = optim.SGD(Gd.parameters(), lr=args.learn_rate, momentum=0.9)
     elif args.optimizer == 'ADAM':
         optimizerD = optim.Adam(D.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
-        optimizerG = optim.Adam(G.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
+        optimizerGu = optim.Adam(Gu.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
+        optimizerGd = optim.Adam(Gd.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
     elif args.optimizer == 'RMSProp':
         optimizerD = optim.RMSprop(D.parameters(), lr=args.learn_rate)
-        optimizerG = optim.RMSprop(G.parameters(), lr=args.learn_rate)
+        optimizerGu = optim.RMSprop(Gu.parameters(), lr=args.learn_rate)
+        optimizerGd = optim.RMSprop(Gd.parameters(), lr=args.learn_rate)
 
 
     ## push models to GPUs
-    G = G.to(device)
+    Gu = Gu.to(device)
+    Gd = Gd.to(device)
     D = D.to(device)
     if device.type == 'cuda' and args.NGPU > 1:
-        G = nn.DataParallel(G, list(range(args.NGPU)))
+        Gu = nn.DataParallel(Gu, list(range(args.NGPU)))
+        Gd = nn.DataParallel(Gd, list(range(args.NGPU)))
         D = nn.DataParallel(D, list(range(args.NGPU)))
 
     print("Start to train .... ")
     alpha = 0.01
     AVE_DIFF = tools.EXPMA(alpha)
+    AVE_MMSE = tools.EXPMA(alpha)
+
+    MSE = nn.MSELoss()
 
     for epoch in range(args.B_EPOCHS, args.N_EPOCHS):
         start_time = time.time()
@@ -127,42 +147,54 @@ if __name__ == '__main__':
             minibatch = dataLoader[minibatch_id]
             real_images = minibatch['image']
             real_images = real_images.to(device)
-            noise = torch.randn((args.minibatch_size, nz, 1, 1))
+            fine_images = 1 - real_images
 
             ## Update D network: for WGAN maximize D(x) - D(G(z))
             D.zero_grad()  # set discriminator gradient to zero
-            fake_images = G(noise).detach()
-            output_real_D = D(real_images)
+            fake_images = Gu(real_images).detach()
+            output_fine_D = D(fine_images)
             output_fake_D = D(fake_images)
-            diff = (output_real_D - output_fake_D).mean()
-            loss = -diff
-            loss.backward()
+            diff = (output_fine_D - output_fake_D).mean()
+            loss_D = -diff
+            loss_D.backward()
             optimizerD.step()
 
-            G.zero_grad()  # set the generator gradient to zero
-            fake_images = G(noise)
+            Gu.zero_grad()  # set the generator gradient to zero
+            Gd.zero_grad()  # set the generator gradient to zero
+            fake_images = Gu(real_images)
+            reco_images = Gd(fake_images)
             output_fake_G_D = D(fake_images)
+            loss_mmse = MSE(reco_images, real_images)
             loss_G_D = -output_fake_G_D.mean()
-            loss_G_D.backward()
-            optimizerG.step()  # Update G parameters
+            loss_G = loss_G_D + loss_mmse
+            loss_G.backward()
+            optimizerGu.step()  # Update Gu parameters
+            optimizerGd.step()  # Update Gd parameters
 
             V_AVE_DIFF = AVE_DIFF.expma(abs(diff.item()))
+            V_AVE_MMSE = AVE_MMSE.expma(loss_mmse.item())
 
-            message = "Epoch:%5d/%5d, MinibatchID:%5d/%5d, DIFF:% 6.12f" % (epoch, args.N_EPOCHS, minibatch_id, minibatch_count, V_AVE_DIFF)
+            message = "Epoch:%5d/%5d, MinibatchID:%5d/%5d, DIFF:% 6.12f, MMSE:% 6.12f" % \
+                      (epoch, args.N_EPOCHS, minibatch_id, minibatch_count, V_AVE_DIFF, V_AVE_MMSE)
             print(message)
 
             istep = minibatch_count * (epoch - args.B_EPOCHS) + minibatch_id
             writer.add_scalar("AVE_DIFF", V_AVE_DIFF, istep)
+            writer.add_scalar("AVE_MMSE", V_AVE_MMSE, istep)
 
             if istep % 300 == 0:
                 # save model every 1000 iteration
-                model_G_file = open(args.outputDir + "/" + open_time_str + "/model_G_CPU.pkl", "wb")
+                model_Gu_file = open(args.outputDir + "/" + open_time_str + "/model_Gu_CPU.pkl", "wb")
+                model_Gd_file = open(args.outputDir + "/" + open_time_str + "/model_Gd_CPU.pkl", "wb")
                 model_D_file = open(args.outputDir + "/" + open_time_str + "/model_D_CPU.pkl", "wb")
-                pickle.dump(G.to("cpu"), model_G_file)
+                pickle.dump(Gu.to("cpu"), model_Gu_file)
+                pickle.dump(Gd.to("cpu"), model_Gd_file)
                 pickle.dump(D.to("cpu"), model_D_file)
-                G.to(device)
+                Gu.to(device)
+                Gd.to(device)
                 D.to(device)
-                model_G_file.close()
+                model_Gu_file.close()
+                model_Gd_file.close()
                 model_D_file.close()
 
         end_time = time.time()
