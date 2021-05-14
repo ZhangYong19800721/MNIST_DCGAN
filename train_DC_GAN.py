@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument("--logDir", type=str, help="The log directory")
     args = parser.parse_args()
 
-    nz = 100
+    nz = 60
 
     open_time_str = time.strftime("%Y%m%d[%H:%M:%S]", time.localtime())
     os.mkdir(args.outputDir + "/" + open_time_str)
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     minibatch_count = len(dataLoader)
 
     ## specify the computing device
-    device = torch.device("cuda:0" if torch.cuda.is_available() and args.NGPU > 0 else "cpu")
+    device = torch.device("cuda:1" if torch.cuda.is_available() and args.NGPU > 0 else "cpu")
 
     # show some data samples
     print("Show some images ...., press ENTER to continue. ")
@@ -62,10 +62,10 @@ if __name__ == '__main__':
         ##########################################################################
         ## load the pretrained G model
         modelG_file = open(args.isLoadG, "rb")  # open the model file
-        Gu = pickle.load(modelG_file)  # load the model file
-        if isinstance(Gu, nn.DataParallel):
-            Gu = Gu.module
-        Gu.to(device)  # push model to GPU device
+        G = pickle.load(modelG_file)  # load the model file
+        if isinstance(G, nn.DataParallel):
+            G = G.module
+        G.to(device)  # push model to GPU device
         modelG_file.close()  # close the model file
     else:
         G = Model.Generator(nz=nz)  # create a generator
@@ -96,8 +96,8 @@ if __name__ == '__main__':
         D = nn.DataParallel(D, list(range(args.NGPU)))
 
     BCE = torch.nn.BCELoss()
-    real_label = torch.full((args.minibatch_size,1,1,1), 1.0, dtype=torch.float32, device=device)
-    fake_label = torch.full((args.minibatch_size,1,1,1), 0.0, dtype=torch.float32, device=device)
+    real_label = torch.full((args.minibatch_size,1), 1.0, dtype=torch.float32, device=device)
+    fake_label = torch.full((args.minibatch_size,1), 0.0, dtype=torch.float32, device=device)
 
     print("Start to train .... ")
     alpha = 0.01
@@ -112,19 +112,16 @@ if __name__ == '__main__':
             minibatch = dataLoader[minibatch_id]
             real_images = minibatch['image']
             real_images = real_images.to(device)
-            noise = torch.randn((args.minibatch_size, nz, 1, 1))
+            noise = torch.randn((args.minibatch_size, nz, 1, 1), device=device)
+            fake_images = G(noise).detach()
 
-            # train with all-real batch
             D.zero_grad()
             output_real_D = D(real_images)
-            real_loss = BCE(output_real_D, real_label)
-            real_loss.backward()
-            # train with all-fake batch
-            fake_images = G(noise)
             output_fake_D = D(fake_images)
+            real_loss = BCE(output_real_D, real_label)
             fake_loss = BCE(output_fake_D, fake_label)
-            fake_loss.backward()
-            # update D
+            loss = real_loss + fake_loss
+            loss.backward()
             optimizerD.step()
 
             G.zero_grad()  # set the generator gradient to zero
