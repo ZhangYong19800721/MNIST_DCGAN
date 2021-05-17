@@ -18,9 +18,9 @@ import tools
 from torch.utils.tensorboard import SummaryWriter
 
 """
---learn_rate=0.001
+--learn_rate=0.0005
 --optimizer=ADAM
---minibatch_size=3000
+--minibatch_size=1000
 --NGPU=2
 --B_EPOCHS=0
 --N_EPOCHS=9000
