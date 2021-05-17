@@ -136,7 +136,7 @@ if __name__ == '__main__':
             output_fake_D = D(fake_images)
             diff = (output_real_D - output_fake_D).mean()
             gradient_penalty = tools.cal_gradient_penalty(D, device, real_images, fake_images)
-            loss = gradient_penalty - diff
+            loss = 0.1 * gradient_penalty - diff
             loss.backward()
             optimizerD.step()
 
