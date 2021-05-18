@@ -8,17 +8,17 @@ class ResidualBlock(nn.Module):
         super(ResidualBlock, self).__init__()
         self.interChannel = interChannel
         self.L01_Conv2d = nn.Conv2d(self.interChannel, self.interChannel, 3, padding=1, bias=True)
-        self.L02_BatchNorm = nn.BatchNorm2d(self.interChannel)
+        # self.L02_BatchNorm = nn.BatchNorm2d(self.interChannel)
         self.L03_PReLU = nn.PReLU(self.interChannel)
         self.L04_Conv2d = nn.Conv2d(self.interChannel, self.interChannel, 3, padding=1, bias=True)
-        self.L05_BatchNorm = nn.BatchNorm2d(self.interChannel)
+        # self.L05_BatchNorm = nn.BatchNorm2d(self.interChannel)
 
     def forward(self, x):
         y = self.L01_Conv2d(x)
-        y = self.L02_BatchNorm(y)
+        # y = self.L02_BatchNorm(y)
         y = self.L03_PReLU(y)
         y = self.L04_Conv2d(y)
-        y = self.L05_BatchNorm(y)
+        # y = self.L05_BatchNorm(y)
         y = y + x
         return y
 
@@ -75,14 +75,14 @@ class PatchFeatureExtractor16(nn.Module):
         self.L02_PReLU = nn.PReLU(self.interChannel)
         self.L03_ResidualBlocks = ResidualBlocks16(self.interChannel)
         self.L04_Conv2d = nn.Conv2d(self.interChannel, self.interChannel, 3, padding=1, bias=True)
-        self.L05_BatchNorm = nn.BatchNorm2d(self.interChannel)
+        # self.L05_BatchNorm = nn.BatchNorm2d(self.interChannel)
 
     def forward(self, x):
         y = self.L01_Conv2d(x)
         y = self.L02_PReLU(y)
         z = self.L03_ResidualBlocks(y)
         z = self.L04_Conv2d(z)
-        z = self.L05_BatchNorm(z)
+        # z = self.L05_BatchNorm(z)
         z = z + y
         return z
 
@@ -96,14 +96,14 @@ class PatchFeatureExtractor8(nn.Module):
         self.L02_PReLU = nn.PReLU(self.interChannel)
         self.L03_ResidualBlocks = ResidualBlocks8(self.interChannel)
         self.L04_Conv2d = nn.Conv2d(self.interChannel, self.interChannel, 3, padding=1, bias=True)
-        self.L05_BatchNorm = nn.BatchNorm2d(self.interChannel)
+        # self.L05_BatchNorm = nn.BatchNorm2d(self.interChannel)
 
     def forward(self, x):
         y = self.L01_Conv2d(x)
         y = self.L02_PReLU(y)
         z = self.L03_ResidualBlocks(y)
         z = self.L04_Conv2d(z)
-        z = self.L05_BatchNorm(z)
+        # z = self.L05_BatchNorm(z)
         z = z + y
         return z
 
@@ -117,14 +117,14 @@ class PatchFeatureExtractor4(nn.Module):
         self.L02_PReLU = nn.PReLU(self.interChannel)
         self.L03_ResidualBlocks = ResidualBlocks4(self.interChannel)
         self.L04_Conv2d = nn.Conv2d(self.interChannel, self.interChannel, 3, padding=1, bias=True)
-        self.L05_BatchNorm = nn.BatchNorm2d(self.interChannel)
+        # self.L05_BatchNorm = nn.BatchNorm2d(self.interChannel)
 
     def forward(self, x):
         y = self.L01_Conv2d(x)
         y = self.L02_PReLU(y)
         z = self.L03_ResidualBlocks(y)
         z = self.L04_Conv2d(z)
-        z = self.L05_BatchNorm(z)
+        # z = self.L05_BatchNorm(z)
         z = z + y
         return z
 
@@ -133,13 +133,13 @@ class Generator(nn.Module):
     def __init__(self, nz=100):
         super(Generator, self).__init__()
         self.L01_Sequential = nn.Sequential(nn.ConvTranspose2d(nz, 512, kernel_size=4, stride=1, padding=0),
-                                            nn.BatchNorm2d(512),
+                                            # nn.BatchNorm2d(512),
                                             nn.PReLU(512),
                                             nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2, padding=1),
-                                            nn.BatchNorm2d(256),
+                                            # nn.BatchNorm2d(256),
                                             nn.PReLU(256),
                                             nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1),
-                                            nn.BatchNorm2d(128),
+                                            # nn.BatchNorm2d(128),
                                             nn.PReLU(128),
                                             nn.ConvTranspose2d(128, 1, kernel_size=4, stride=2, padding=1),
                                             nn.LeakyReLU(0.2),
@@ -155,10 +155,10 @@ class GeneratorUx1(nn.Module):
         super(GeneratorUx1, self).__init__()
         self.patchFeatureExtractor = PatchFeatureExtractor16(inChannel, interChannel)
         self.L01_Sequential = nn.Sequential(nn.Conv2d(interChannel, 256, 3, padding=3 // 2),
-                                            nn.BatchNorm2d(256),
+                                            # nn.BatchNorm2d(256),
                                             nn.PReLU(256),
                                             nn.Conv2d(256, outChannel, 9, padding=9 // 2),
-                                            nn.BatchNorm2d(outChannel),
+                                            # nn.BatchNorm2d(outChannel),
                                             nn.PReLU(outChannel),
                                             )
 
@@ -173,13 +173,13 @@ class GeneratorUx2(nn.Module):
         super(GeneratorUx2, self).__init__()
         self.patchFeatureExtractor = PatchFeatureExtractor16(inChannel, interChannel)
         self.L01_Sequential = nn.Sequential(nn.Conv2d(interChannel, 256, 3, padding=3 // 2),
-                                            nn.BatchNorm2d(256),
+                                            # nn.BatchNorm2d(256),
                                             nn.PReLU(256),
                                             nn.ConvTranspose2d(in_channels=256, out_channels=256, kernel_size=4, stride=2, padding=1),
-                                            nn.BatchNorm2d(256),
+                                            # nn.BatchNorm2d(256),
                                             nn.PReLU(256),
                                             nn.Conv2d(256, outChannel, 9, padding=9 // 2),
-                                            nn.BatchNorm2d(outChannel),
+                                            # nn.BatchNorm2d(outChannel),
                                             nn.PReLU(outChannel),
                                             )
 
@@ -194,10 +194,10 @@ class GeneratorDx1(nn.Module):
         super(GeneratorDx1, self).__init__()
         self.patchFeatureExtractor = PatchFeatureExtractor16(inChannel, interChannel)
         self.L01_Sequential = nn.Sequential(nn.Conv2d(interChannel, 128, 3, padding=3 // 2),
-                                            nn.BatchNorm2d(128),
+                                            # nn.BatchNorm2d(128),
                                             nn.PReLU(128),
                                             nn.Conv2d(128, outChannel, 3, padding=3 // 2),
-                                            nn.BatchNorm2d(outChannel),
+                                            # nn.BatchNorm2d(outChannel),
                                             nn.PReLU(outChannel),
                                             )
 
@@ -212,13 +212,13 @@ class GeneratorDx2(nn.Module):
         super(GeneratorDx2, self).__init__()
         self.patchFeatureExtractor = PatchFeatureExtractor16(inChannel, interChannel)
         self.L01_Sequential = nn.Sequential(nn.Conv2d(interChannel, 128, 3, padding=3 // 2),
-                                            nn.BatchNorm2d(128),
+                                            # nn.BatchNorm2d(128),
                                             nn.PReLU(128),
                                             nn.Conv2d(128, 128, 3, stride=2, padding=3 // 2),
-                                            nn.BatchNorm2d(128),
+                                            # nn.BatchNorm2d(128),
                                             nn.PReLU(128),
                                             nn.Conv2d(128, outChannel, 3, padding=3 // 2),
-                                            nn.BatchNorm2d(outChannel),
+                                            # nn.BatchNorm2d(outChannel),
                                             nn.PReLU(outChannel),
                                             )
 

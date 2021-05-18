@@ -72,7 +72,7 @@ if __name__ == '__main__':
     if args.isLoadGu:
         ##########################################################################
         ## load the pretrained G model
-        modelGu_file = open(args.isLoadG, "rb")  # open the model file
+        modelGu_file = open(args.isLoadGu, "rb")  # open the model file
         Gu = pickle.load(modelGu_file)  # load the model file
         if isinstance(Gu, nn.DataParallel):
             Gu = Gu.module
@@ -110,13 +110,13 @@ if __name__ == '__main__':
 
     # Setup optimizers for both G and D
     if args.optimizer == 'SGD':
-        optimizerD = optim.SGD(D.parameters(), lr=args.learn_rate, momentum=0.9)
-        optimizerGu = optim.SGD(Gu.parameters(), lr=args.learn_rate, momentum=0.9)
-        optimizerGd = optim.SGD(Gd.parameters(), lr=args.learn_rate, momentum=0.9)
+        optimizerD = optim.SGD(D.parameters(), lr=args.learn_rate)
+        optimizerGu = optim.SGD(Gu.parameters(), lr=args.learn_rate)
+        optimizerGd = optim.SGD(Gd.parameters(), lr=args.learn_rate)
     elif args.optimizer == 'ADAM':
-        optimizerD = optim.Adam(D.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
-        optimizerGu = optim.Adam(Gu.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
-        optimizerGd = optim.Adam(Gd.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
+        optimizerD = optim.Adam(D.parameters(), lr=args.learn_rate, betas=(0.5, 0.999))
+        optimizerGu = optim.Adam(Gu.parameters(), lr=args.learn_rate, betas=(0.5, 0.999))
+        optimizerGd = optim.Adam(Gd.parameters(), lr=args.learn_rate, betas=(0.5, 0.999))
     elif args.optimizer == 'RMSProp':
         optimizerD = optim.RMSprop(D.parameters(), lr=args.learn_rate)
         optimizerGu = optim.RMSprop(Gu.parameters(), lr=args.learn_rate)
