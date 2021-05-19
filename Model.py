@@ -159,13 +159,15 @@ class GeneratorUx1(nn.Module):
                                             nn.PReLU(256),
                                             nn.Conv2d(256, outChannel, 9, padding=9 // 2),
                                             nn.BatchNorm2d(outChannel),
-                                            nn.PReLU(outChannel),
+                                            # nn.LeakyReLU(0.02),
                                             )
 
     # the x is low resolution images minibatch
     def forward(self, x):
         y = self.patchFeatureExtractor(x)
         y = self.L01_Sequential(y)
+        y = torch.nn.functional.leaky_relu(y, 0.02)
+        y = 1 - torch.nn.functional.leaky_relu(1 - y, 0.02)
         return y
 
 class GeneratorUx2(nn.Module):
@@ -198,13 +200,15 @@ class GeneratorDx1(nn.Module):
                                             nn.PReLU(128),
                                             nn.Conv2d(128, outChannel, 3, padding=3 // 2),
                                             nn.BatchNorm2d(outChannel),
-                                            nn.PReLU(outChannel),
+                                            # nn.PReLU(outChannel),
                                             )
 
     # the x is low resolution images minibatch
     def forward(self, x):
         y = self.patchFeatureExtractor(x)
         y = self.L01_Sequential(y)
+        y = torch.nn.functional.leaky_relu(y, 0.02)
+        y = 1 - torch.nn.functional.leaky_relu(1 - y, 0.02)
         return y
 
 class GeneratorDx2(nn.Module):
