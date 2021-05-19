@@ -79,7 +79,7 @@ if __name__ == '__main__':
         Gu.to(device)  # push model to GPU device
         modelGu_file.close()  # close the model file
     else:
-        Gu = Model.GeneratorUx1(1, 32, 1)  # create a generator
+        Gu = Model.GeneratorUx1(1, 64, 1)  # create a generator
         Gu.apply(tools.weights_init)  # initialize weights for generator
 
     if args.isLoadGd:
@@ -92,7 +92,7 @@ if __name__ == '__main__':
         Gd.to(device)  # push model to GPU device
         modelGd_file.close()  # close the model file
     else:
-        Gd = Model.GeneratorDx1(1, 32, 1)  # create a generator
+        Gd = Model.GeneratorDx1(1, 64, 1)  # create a generator
         Gd.apply(tools.weights_init)  # initialize weights for generator
 
     if args.isLoadD:

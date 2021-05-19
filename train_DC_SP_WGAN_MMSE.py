@@ -78,7 +78,7 @@ if __name__ == '__main__':
         G.to(device)  # push model to GPU device
         modelG_file.close()  # close the model file
     else:
-        G = Model.GeneratorUx1(1, 32, 1)  # create a generator
+        G = Model.GeneratorUx1(1, 64, 1)  # create a generator
         G.apply(tools.weights_init)  # initialize weights for generator
 
     if args.isLoadD:
@@ -99,8 +99,8 @@ if __name__ == '__main__':
         optimizerD = optim.SGD(D.parameters(), lr=args.learn_rate, momentum=0.9)
         optimizerG = optim.SGD(G.parameters(), lr=args.learn_rate, momentum=0.9)
     elif args.optimizer == 'ADAM':
-        optimizerD = optim.Adam(D.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
-        optimizerG = optim.Adam(G.parameters(), lr=args.learn_rate, betas=(0.9, 0.999))
+        optimizerD = optim.Adam(D.parameters(), lr=args.learn_rate, betas=(0.5, 0.999))
+        optimizerG = optim.Adam(G.parameters(), lr=args.learn_rate, betas=(0.5, 0.999))
     elif args.optimizer == 'RMSProp':
         optimizerD = optim.RMSprop(D.parameters(), lr=args.learn_rate)
         optimizerG = optim.RMSprop(G.parameters(), lr=args.learn_rate)
