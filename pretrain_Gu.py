@@ -66,7 +66,7 @@ if __name__ == '__main__':
                            minibatch['image'][3], minibatch['image'][4], minibatch['image'][5],
                            minibatch['image'][6], minibatch['image'][7], minibatch['image'][8])
 
-    Gu = Model.GeneratorUx1(1, 32, 1)  # create a generator
+    Gu = Model.GeneratorUx1(1, 64, 1)  # create a generator
     Gu.apply(tools.weights_init)  # initialize weights for generator
 
     # Setup optimizers for both G and D
