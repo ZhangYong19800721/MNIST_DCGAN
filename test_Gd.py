@@ -39,7 +39,7 @@ if __name__ == "__main__":
                            fine_images[6], fine_images[7], fine_images[8])
 
     with torch.no_grad():
-        images = modelG(minibatch['image'])
+        images = modelG(fine_images)
 
     tools.showNineGrid_3x3(images[0], images[1], images[2],
                            images[3], images[4], images[5],
