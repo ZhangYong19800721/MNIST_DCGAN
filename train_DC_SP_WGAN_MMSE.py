@@ -170,6 +170,7 @@ if __name__ == '__main__':
                 D.to(device)
                 model_G_file.close()
                 model_D_file.close()
+                print("save the model to " + args.outputDir + "/" + open_time_str)
 
         end_time = time.time()
         print(f'train_time_for_epoch = {(end_time - start_time) / 60} min')
