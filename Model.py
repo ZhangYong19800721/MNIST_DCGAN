@@ -153,6 +153,7 @@ class Generator(nn.Module):
 class GeneratorUx1(nn.Module):
     def __init__(self, inChannel=3, interChannel=64, outChannel=3):
         super(GeneratorUx1, self).__init__()
+        self.L00_Transform = nn.Conv2d(in_channels=inChannel, out_channels=inChannel, kernel_size=1, padding=0, bias=True)
         self.patchFeatureExtractor = PatchFeatureExtractor16(inChannel, interChannel)
         self.L01_Sequential = nn.Sequential(nn.Conv2d(interChannel, 256, 3, padding=3 // 2),
                                             nn.BatchNorm2d(256),
@@ -164,7 +165,8 @@ class GeneratorUx1(nn.Module):
 
     # the x is low resolution images minibatch
     def forward(self, x):
-        y = self.patchFeatureExtractor(x)
+        y = self.L00_Transform(x)
+        y = self.patchFeatureExtractor(y)
         y = self.L01_Sequential(y)
         y = torch.nn.functional.leaky_relu(y, 0.02)
         y = 1 - torch.nn.functional.leaky_relu(1 - y, 0.02)
@@ -194,18 +196,19 @@ class GeneratorUx2(nn.Module):
 class GeneratorDx1(nn.Module):
     def __init__(self, inChannel=3, interChannel=64, outChannel=3):
         super(GeneratorDx1, self).__init__()
+        self.L00_Transform = nn.Conv2d(in_channels=inChannel, out_channels=inChannel, kernel_size=1, padding=0, bias=True)
         self.patchFeatureExtractor = PatchFeatureExtractor16(inChannel, interChannel)
         self.L01_Sequential = nn.Sequential(nn.Conv2d(interChannel, 256, 3, padding=3 // 2),
                                             nn.BatchNorm2d(256),
                                             nn.PReLU(256),
                                             nn.Conv2d(256, outChannel, 3, padding=3 // 2),
                                             nn.BatchNorm2d(outChannel),
-                                            # nn.PReLU(outChannel),
                                             )
 
     # the x is low resolution images minibatch
     def forward(self, x):
-        y = self.patchFeatureExtractor(x)
+        y = self.L00_Transform(x)
+        y = self.patchFeatureExtractor(y)
         y = self.L01_Sequential(y)
         y = torch.nn.functional.leaky_relu(y, 0.02)
         y = 1 - torch.nn.functional.leaky_relu(1 - y, 0.02)
