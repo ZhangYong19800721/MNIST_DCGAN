@@ -105,7 +105,6 @@ if __name__ == '__main__':
         optimizerD = optim.RMSprop(D.parameters(), lr=args.learn_rate)
         optimizerG = optim.RMSprop(G.parameters(), lr=args.learn_rate)
 
-
     ## push models to GPUs
     G = G.to(device)
     D = D.to(device)
@@ -122,10 +121,10 @@ if __name__ == '__main__':
 
     for epoch in range(args.B_EPOCHS, args.N_EPOCHS):
         start_time = time.time()
-        for minibatch_id in range(minibatch_count):
+        for minibatch_id in range(1, 1 + minibatch_count):
             ## Update D network:
             # train with all-real batch
-            minibatch = dataLoader[minibatch_id]
+            minibatch = dataLoader[minibatch_id-1]
             real_images = minibatch['image']
             real_images = real_images.to(device)
             fine_images = 1 - real_images
@@ -145,7 +144,7 @@ if __name__ == '__main__':
             output_fake_G_D = D(fake_images)
             loss_G_D = -output_fake_G_D.mean()
             loss_mmse = MSE(fake_images, fine_images)
-            loss_G = loss_G_D + 0.001 * loss_mmse
+            loss_G = 0.001 * loss_G_D + loss_mmse
             loss_G.backward()
             optimizerG.step()  # Update G parameters
 
