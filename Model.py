@@ -166,8 +166,9 @@ class GeneratorUx1(nn.Module):
     # the x is low resolution images minibatch
     def forward(self, x):
         y = self.L00_Transform(x)
-        y = self.patchFeatureExtractor(y)
-        y = self.L01_Sequential(y)
+        z = self.patchFeatureExtractor(y)
+        z = self.L01_Sequential(z)
+        y = y + z
         y = torch.nn.functional.leaky_relu(y, 0.02)
         y = 1 - torch.nn.functional.leaky_relu(1 - y, 0.02)
         return y
@@ -208,8 +209,9 @@ class GeneratorDx1(nn.Module):
     # the x is low resolution images minibatch
     def forward(self, x):
         y = self.L00_Transform(x)
-        y = self.patchFeatureExtractor(y)
-        y = self.L01_Sequential(y)
+        z = self.patchFeatureExtractor(y)
+        z = self.L01_Sequential(z)
+        y = y + z
         y = torch.nn.functional.leaky_relu(y, 0.02)
         y = 1 - torch.nn.functional.leaky_relu(1 - y, 0.02)
         return y
