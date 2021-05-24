@@ -20,10 +20,10 @@ from torch.utils.tensorboard import SummaryWriter
 """
 --learn_rate=0.0005
 --optimizer=ADAM
---minibatch_size=1000
+--minibatch_size=300
 --NGPU=2
---B_EPOCHS=0
---N_EPOCHS=9000
+--B_EPOCHS=1
+--N_EPOCHS=10000
 --outputDir=./output
 --logDir=./log
 """
@@ -144,7 +144,7 @@ if __name__ == '__main__':
             output_fake_G_D = D(fake_images)
             loss_G_D = -output_fake_G_D.mean()
             loss_mmse = MSE(fake_images, fine_images)
-            loss_G = 0.001 * loss_G_D + loss_mmse
+            loss_G = 0.01 * loss_G_D + loss_mmse
             loss_G.backward()
             optimizerG.step()  # Update G parameters
 
@@ -159,7 +159,7 @@ if __name__ == '__main__':
             writer.add_scalar("AVE_DIFF", V_AVE_DIFF, istep)
             writer.add_scalar("AVE_MMSE", V_AVE_MMSE, istep)
 
-            if istep % 300 == 0:
+            if istep % min(minibatch_count, 500) == 0:
                 # save model every 1000 iteration
                 model_G_file = open(args.outputDir + "/" + open_time_str + "/model_G_CPU.pkl", "wb")
                 model_D_file = open(args.outputDir + "/" + open_time_str + "/model_D_CPU.pkl", "wb")

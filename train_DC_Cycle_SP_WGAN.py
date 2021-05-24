@@ -20,7 +20,7 @@ from torch.utils.tensorboard import SummaryWriter
 """
 --learn_rate=0.0005
 --optimizer=ADAM
---minibatch_size=300
+--minibatch_size=200
 --NGPU=2
 --B_EPOCHS=1
 --N_EPOCHS=10000
