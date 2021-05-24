@@ -20,10 +20,10 @@ from torch.utils.tensorboard import SummaryWriter
 """
 --learn_rate=0.0005
 --optimizer=ADAM
---minibatch_size=3000
+--minibatch_size=300
 --NGPU=2
---B_EPOCHS=0
---N_EPOCHS=9000
+--B_EPOCHS=1
+--N_EPOCHS=10000
 --outputDir=./output
 --logDir=./log
 """
@@ -122,7 +122,6 @@ if __name__ == '__main__':
         optimizerGu = optim.RMSprop(Gu.parameters(), lr=args.learn_rate)
         optimizerGd = optim.RMSprop(Gd.parameters(), lr=args.learn_rate)
 
-
     ## push models to GPUs
     Gu = Gu.to(device)
     Gd = Gd.to(device)
@@ -139,12 +138,12 @@ if __name__ == '__main__':
 
     MSE = nn.MSELoss()
 
-    for epoch in range(args.B_EPOCHS, args.N_EPOCHS):
+    for epoch in range(args.B_EPOCHS, 1 + args.N_EPOCHS):
         start_time = time.time()
-        for minibatch_id in range(minibatch_count):
+        for minibatch_id in range(1, 1 + minibatch_count):
             ## Update D network:
             # train with all-real batch
-            minibatch = dataLoader[minibatch_id]
+            minibatch = dataLoader[minibatch_id - 1]
             real_images = minibatch['image']
             real_images = real_images.to(device)
             fine_images = 1 - real_images
