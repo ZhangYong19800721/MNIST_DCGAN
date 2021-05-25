@@ -165,7 +165,7 @@ if __name__ == '__main__':
             output_fake_G_D = D(fake_images)
             loss_mmse = MSE(reco_images, real_images)
             loss_G_D = -output_fake_G_D.mean()
-            loss_G = loss_G_D + loss_mmse
+            loss_G = 0.001 * loss_G_D + loss_mmse
             loss_G.backward()
             optimizerGu.step()  # Update Gu parameters
             optimizerGd.step()  # Update Gd parameters
